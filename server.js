@@ -14,7 +14,7 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://job-hunter-backend-2.onrender.com", // replace with actual frontend URL
+  "https://job-hunter-git-master-rakeshs-projects-838f71b0.vercel.app/",
 ];
 
 app.use(
