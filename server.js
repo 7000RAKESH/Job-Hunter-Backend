@@ -12,6 +12,19 @@ const salt = 10;
 const { Jobs, Users, SavedJobs, Applications } = require("./Models/Schemas");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://job-hunter-backend-2.onrender.com", // replace with actual frontend URL
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
+
 env.config();
 
 app.use(express.json());
@@ -19,7 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 app.use(
   cors({
-    origin: "http://localhost:5173", // Allow requests only from this origin
+    origin: allowedOrigins, // Allow requests only from this origin
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow these HTTP methods
     credentials: true, // Allow cookies and credentials to be sent
   })
@@ -112,6 +125,9 @@ app.post("/job-application", upload.single("resume"), async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+app.get("/", (req, res) => {
+  res.send("hello");
+});
 
 app.get("/joblist", async (req, res) => {
   const jobsData = await Jobs.find();
@@ -159,147 +175,6 @@ app.get("/jobs/:id", async (req, res) => {
   }
 });
 
-// app.post("/job-application", upload.single("resume"), (req, res) => {
-//   const {
-//     skills,
-//     experience,
-//     education,
-//     candidateId,
-//     candidatename,
-//     appliedJobId,
-//     status,
-//   } = req.body;
-//   const resumeFile = req.file;
-
-//   fs.readFile(applicationsData, "utf-8", (err, data) => {
-//     if (err) {
-//       return res.status(500).json({ error: "Error reading file" });
-//     }
-
-//     let candidates = [];
-//     if (data) {
-//       candidates = JSON.parse(data);
-//     }
-
-//     // Find candidate or create new one if not found
-//     let candidate = candidates.find((c) => c.candidateId === candidateId);
-
-//     // If the candidate doesn't exist, create a new candidate entry
-//     if (!candidate) {
-//       candidate = {
-//         candidateId: candidateId,
-//         candidatename: candidatename,
-//         appliedJobs: [], // Initialize with an empty array
-//         skills: skills,
-//         experience: experience,
-//         education: education,
-//         resume: resumeFile ? resumeFile.path : null, // Save the path to the resume file
-//       };
-//       candidates.push(candidate); // Add the new candidate to the array
-//     }
-
-//     // Check if the candidate has already applied for this job
-//     const existingJob = candidate.appliedJobs.find(
-//       (job) => job.jobId === appliedJobId
-//     );
-
-//     if (existingJob) {
-//       // If the job already exists, update its status
-//       existingJob.status = status;
-//     } else {
-//       // Otherwise, add the job with the status
-//       candidate.appliedJobs.push({
-//         jobId: appliedJobId,
-//         status: "Applied", // Set the initial status for this job
-//       });
-//     }
-
-//     // Save the updated candidates data back to the file
-//     // WriteData(applicationsData,candidates)
-//     fs.writeFile(
-//       applicationsData,
-//       JSON.stringify(candidates, null, 2),
-//       (err) => {
-//         if (err) {
-//           return res.status(500).json({ error: "Error saving application" });
-//         }
-
-//         res.status(200).json({ message: "Application submitted successfully" });
-//       }
-//     );
-//   });
-// });
-
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, "uploads/"); // Store the file in "uploads" directory
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, Date.now() + path.extname(file.originalname)); // Generate a unique filename
-//   },
-// });
-
-// const upload = multer({ storage });
-
-// app.post("/job-application", upload.single("resume"), (req, res) => {
-//   const {
-//     skills,
-//     experience,
-//     education,
-//     candidateId,
-//     candidatename,
-//     appliedJobId,
-//     status,
-//   } = req.body;
-//   const resumeFile = req.file;
-
-//   fs.readFile(applicationsData, "utf-8", (err, data) => {
-//     if (err) {
-//       return res.status(500).json({ error: "Error reading file" });
-//     }
-
-//     let candidates = [];
-//     if (data) {
-//       candidates = JSON.parse(data);
-//     }
-
-//     let candidate = candidates.find((c) => c.candidateId === candidateId);
-
-//     // If the candidate doesn't exist, create a new candidate entry
-//     if (!candidate) {
-//       candidate = {
-//         candidateId: candidateId,
-//         candidatename: candidatename,
-//         appliedJobs: [],
-//         skills: skills,
-//         experience: experience,
-//         education: education,
-//         resume: resumeFile ? resumeFile.path : null, // Save the path to the resume file
-//         status: status,
-//       };
-//       candidates.push(candidate); // Add the new candidate to the array
-//     }
-
-//     // If the candidate exists, just add the applied job ID to the appliedJobs array
-//     if (!candidate.appliedJobs.includes(appliedJobId)) {
-//       candidate.appliedJobs.push(appliedJobId);
-//     }
-
-//     // Save the updated candidates data back to the file
-//     fs.writeFile(
-//       applicationsData,
-//       JSON.stringify(candidates, null, 2),
-//       (err) => {
-//         if (err) {
-//           return res.status(500).json({ error: "Error saving application" });
-//         }
-
-//         res.status(200).json({ message: "Application submitted successfully" });
-//       }
-//     );
-//   });
-// });
-
 app.post("/jobs/:id/apply", (req, res) => {
   const { skills, experience, education, upload } = req.body;
   const id = req.params.id;
@@ -340,23 +215,6 @@ app.post("/", async (req, res) => {
   }
 });
 
-// app.post("/register", async (req, res) => {
-//   const { email, password, username } = req.body;
-//   console.log(req.body);
-
-//   const userData = await Users.find();
-//   req.body.id = userData.length ? userData[userData.length - 1].id + 1 : 1;
-//   const hashedPassword = await bcrypt.hash(password, salt);
-//   userData.push({ ...req.body, password: hashedPassword });
-//   // WriteData(usersfile, userData);
-//   console.log(userData);
-//   const newUser = new Users(userData);
-//   await newUser.save();
-//   res
-//     .status(201)
-//     .json({ message: "User created successfully", data: req.body });
-// });
-
 app.post("/register", async (req, res) => {
   try {
     const { email, password, username } = req.body;
@@ -386,30 +244,6 @@ app.post("/register", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-// app.post("/login", async (req, res) => {
-//   const { email, password } = req.body;
-//   if (!email || !password) {
-//     return res.status(400).send("You missed inputs");
-//   }
-//   const data = await Users.findOne({ email });
-
-//   if (!data) {
-//     return res.status(404).send("User not found");
-//   }
-//   const isPasswordCorrect = await bcrypt.compare(password, data.password);
-//   if (isPasswordCorrect) {
-//     const token = jwt.sign(data, secret_key, { expiresIn: "3h" });
-//     return res.status(200).json({
-//       message: `Welcome ${data.username}`,
-//       token,
-//       status: 200,
-//       data,
-//     });
-//   } else {
-//     return res.status(401).send("Incorrect password");
-//   }
-// });
 
 app.post("/login", async (req, res) => {
   try {
@@ -460,42 +294,6 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-// app.post("/postjob", async (req, res) => {
-//   const {
-//     name,
-//     image,
-//     description,
-//     role,
-//     requirements,
-//     isopen,
-//     location,
-//     recruiterid,
-//     salary,
-//   } = req.body;
-
-//   if (!name || !description || !role || !location) {
-//     return res.status(400).json({ message: "Missing required fields" });
-//   }
-
-//   const jobsData = await Jobs.find();
-//   const newJob = {
-//     id: jobsData.length ? jobsData[jobsData.length - 1].id + 1 : 1,
-//     name,
-//     image,
-//     description,
-//     role,
-//     requirements,
-//     isopen,
-//     location,
-//     recruiterid,
-//     salary,
-//   };
-
-//   await newJob.save()
-
-//   res.status(201).json({ message: "Job posted successfully", data: newJob });
-// });
 
 app.post("/postjob", async (req, res) => {
   try {
@@ -598,40 +396,6 @@ app.put("/jobs/:id", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-// app.delete("/jobs/:id", async (req, res) => {
-//   const { id } = req.params;
-
-//   const jobsData = await Jobs.findByIdAndDelete(id);
-//   const jobIndex = jobsData.findIndex((job) => job.id === parseInt(id));
-
-//   if (jobIndex === -1) {
-//     return res.status(404).json({ message: "Job not found" });
-//   }
-
-//   jobsData.splice(jobIndex, 1);
-//   WriteData(datafile, jobsData);
-
-//   res.status(200).json({ message: "Job deleted successfully" });
-// });
-
-// app.delete("/jobs/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-
-//     // Find and delete the job in MongoDB
-//     const deletedJob = await Jobs.findByIdAndDelete(id);
-
-//     if (!deletedJob) {
-//       return res.status(404).json({ message: "Job not found" });
-//     }
-
-//     res.status(200).json({ message: "Job deleted successfully" });
-//   } catch (error) {
-//     console.error("Error deleting job:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
 
 app.post("/updateRole", (req, res) => {
   const { email, role } = req.body;
@@ -744,55 +508,6 @@ app.post("/save-job", async (req, res) => {
   }
 });
 
-// app.post("/save-job", (req, res) => {
-//   const { candidateId, jobId } = req.body;
-//   if (!candidateId || !jobId) {
-//     return res
-//       .status(400)
-//       .json({ message: "Candidate ID and Job ID are required" });
-//   }
-
-//   const savedJobs = readSavedFile();
-//   const candidateSavedJobs = savedJobs.find(
-//     (savedJob) => savedJob.candidateId === candidateId
-//   );
-
-//   if (!candidateSavedJobs) {
-//     savedJobs.push({
-//       candidateId,
-//       savedJobs: !savedJobs.includes(jobId) && [jobId],
-//     });
-//   } else {
-//     candidateSavedJobs.savedJobs.push(jobId);
-//   }
-
-//   writeSavedData(savedJobs);
-
-//   res.status(201).json({ message: "Job saved successfully" });
-// });
-
-// 6. **Update Job Status (For Recruiters)**
-
-// app.patch("/status/:id", (req, res) => {
-//   const id = req.params.id;
-//   const { isopen } = req.body;
-//   const jobs = readData(datafile);
-
-//   const jobIndex = jobs.findIndex((job) => job.id == id);
-
-//   if (jobIndex === -1) {
-//     return res.status(404).json({ message: "Job not found" });
-//   }
-
-//   jobs[jobIndex].isopen = isopen;
-//   // console.log(jobs[jobIndex]);
-//   // console.log(jobs);
-//   WriteData(datafile, jobs);
-//   res
-//     .status(200)
-//     .json({ message: `Job status updated to ${isopen ? "open" : "closed"}` });
-// });
-
 // // 7. **Update Application Status (For Recruiters)**
 
 app.patch("/status/:id", async (req, res) => {
@@ -839,39 +554,6 @@ app.delete("/jobs/:id", async (req, res) => {
   }
 });
 
-// app.patch("/:candidateId/:jobId", (req, res) => {
-//   const { candidateId, jobId } = req.params;
-//   const { status } = req.body;
-//   if (
-//     !status ||
-//     !["applied", "interviewing", "selected", "rejected"].includes(status)
-//   ) {
-//     return res.status(400).json({ message: "Valid status is required" });
-//   }
-//   const applications = readData(applicationsData);
-//   const applicationIndex = applications.findIndex(
-//     (app) => app.candidateId == candidateId
-//   );
-
-//   if (applicationIndex === -1) {
-//     return res.status(404).json({ message: "Application not found" });
-//   }
-//   const appliedJobIndex = applications[applicationIndex].appliedJobs.findIndex(
-//     (job) => job.jobId === jobId
-//   );
-
-//   if (appliedJobIndex === -1) {
-//     return res
-//       .status(404)
-//       .json({ message: "Job not found in candidate's applied jobs" });
-//   }
-//   // Update the status for the specified jobId
-//   applications[applicationIndex].appliedJobs[appliedJobIndex].status = status;
-
-//   WriteData(applicationsData, applications);
-//   res.status(200).json({ message: "Status updated successfully" });
-// });
-
 app.patch("/:candidateId/:jobId", async (req, res) => {
   const { candidateId, jobId } = req.params;
   const { status } = req.body;
@@ -907,6 +589,10 @@ app.patch("/:candidateId/:jobId", async (req, res) => {
   }
 });
 
-app.listen(Port, () => {
-  console.log(`Server is running on http://localhost:${Port}`);
+app.listen(Port, "0.0.0.0", () => {
+  console.log(`Server is running on http://0.0.0.0:${Port}`);
 });
+
+// app.listen(Port, () => {
+//   console.log(`Server is running on http://localhost:${Port}`);
+// });
