@@ -16,15 +16,6 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://job-hunter-git-master-rakeshs-projects-838f71b0.vercel.app/",
 ];
-
-app.use(
-  cors({
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-  })
-);
-
 env.config();
 
 app.use(express.json());
@@ -33,7 +24,7 @@ app.use("/uploads", express.static("uploads"));
 app.use(
   cors({
     origin: allowedOrigins, // Allow requests only from this origin
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow these HTTP methods
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"], // Allow these HTTP methods
     credentials: true, // Allow cookies and credentials to be sent
   })
 );
@@ -44,6 +35,7 @@ app.options("*", (req, res) => {
   res.sendStatus(200);
 });
 
+console.log(process.env.MONGODB_URI);
 mongoose
   .connect(process.env.MONGODB_URI)
   .then((sucess) => console.log("connected"))
