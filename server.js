@@ -581,6 +581,9 @@ app.patch("/:candidateId/:jobId", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
+});
 
 app.listen(Port, "0.0.0.0", () => {
   console.log(`Server is running on http://0.0.0.0:${Port}`);
