@@ -209,7 +209,7 @@ app.post("/", async (req, res) => {
 
 app.post("/register", async (req, res) => {
   try {
-    const { email, password, username } = req.body;
+    const { email, password, username, role } = req.body;
 
     // Check if user already exists
     const existingUser = await Users.findOne({ email });
@@ -223,6 +223,7 @@ app.post("/register", async (req, res) => {
       email,
       username,
       password: hashedPassword,
+      role,
     });
 
     // Save user to DB
