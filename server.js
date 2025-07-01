@@ -12,15 +12,18 @@ const salt = 10;
 const { Jobs, Users, SavedJobs, Applications } = require("./Models/Schemas");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
+
 const allowedOrigins = [
   "http://localhost:5173",
   "https://job-hunter-git-master-rakeshs-projects-838f71b0.vercel.app/",
 ];
+
 env.config();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
+app.use(cors());
 app.use(
   cors({
     origin: allowedOrigins, // Allow requests only from this origin
@@ -35,7 +38,7 @@ app.options("*", (req, res) => {
   res.sendStatus(200);
 });
 
-console.log(process.env.MONGODB_URI);
+// console.log(process.env.MONGODB_URI);
 mongoose
   .connect(process.env.MONGODB_URI)
   .then((sucess) => console.log("connected"))
@@ -75,7 +78,7 @@ app.post("/job-application", upload.single("resume"), async (req, res) => {
     } = req.body;
 
     const resumeUrl = req.file ? req.file.path : null;
-    console.log(resumeUrl);
+    // console.log(resumeUrl);
     // Find the candidate by ID
     let candidate = await Applications.findOne({ candidateId });
 
@@ -501,7 +504,7 @@ app.post("/save-job", async (req, res) => {
   }
 });
 
-// // 7. **Update Application Status (For Recruiters)**
+// 7. **Update Application Status (For Recruiters)**
 
 app.patch("/status/:id", async (req, res) => {
   try {
